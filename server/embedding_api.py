@@ -75,12 +75,15 @@ def search_texts(query, top_k=2):
 
     D, I = index.search(query_embedding, top_k)
     results = [texts[i] for i in I[0]]
-    
+     
+    # 将 D 的元素转换为浮点数并打印
+    print("相关性分数（D）:", D[0].astype(float))
     return results
 
 # 测试功能
 # if __name__ == "__main__":
 #     build_index()
-#     query = "李白如何出装"
+#     query = "孙尚香如何出装"
 #     results = search_texts(query)
-#     print(results[0])
+#     for reult in results:
+#         print(reult, "\n")
