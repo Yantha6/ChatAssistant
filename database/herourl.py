@@ -20,7 +20,7 @@ def get_hero_urls():
             hero_url = a_tag['href']
             hero_urls.append({'name': hero_name, 'url': base_url+hero_url})
     
-    print(hero_urls)
+    # 打印所有英雄的URL
+    
+    #print("hero_urls:\n",hero_urls)
     return hero_urls
-
-get_hero_urls()
