@@ -1,4 +1,4 @@
-from herourl import *
+from .herourl import *
 
 def get_hero_story(soup):
     storys_section = soup.find('div', class_='pop-story')
@@ -38,21 +38,21 @@ def save_hero_story(hero):
     print(f"{hero['name']}的故事信息已从网络获取并保存到 {file_path}")
     
 
-def perform_data_crawl():
+def perform_story_crawl():
     hero_urls = get_hero_urls()
     for hero in hero_urls:
         save_hero_story(hero)
     return True
 
-def main():
-    hero_urls = get_hero_urls()
-    for hero in hero_urls:
-        save_hero_story(hero)
-    # 测试单个英雄
-    # hero_urls = get_hero_urls()
-    # print("heros:")
-    # print(hero_urls[1],'\n')
-    # save_hero_story(hero_urls[1])
+# def main():
+#     hero_urls = get_hero_urls()
+#     for hero in hero_urls:
+#         save_hero_story(hero)
+#     # 测试单个英雄
+#     # hero_urls = get_hero_urls()
+#     # print("heros:")
+#     # print(hero_urls[1],'\n')
+#     # save_hero_story(hero_urls[1])
     
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

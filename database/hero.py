@@ -1,4 +1,4 @@
-from herourl import *
+from .herourl import *
 
 def get_skills_info(soup):
     skills_section = soup.find('div', class_='skill-show')
