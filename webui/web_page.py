@@ -12,7 +12,7 @@ if 'chat_history' not in st.session_state:
 
 # 定义导航栏
 st.sidebar.title("导航栏")
-mode = st.sidebar.radio("选择对话模式", ["LLM 对话", "知识库问答"], index=1)
+mode = st.sidebar.radio("选择模式", ["LLM 对话", "知识库问答", "故事创作"], index=1)
 model = st.sidebar.radio("选择模型", ["ChatGLM3", "OpenAI"])
 max_tokens = st.sidebar.slider("max_tokens", 0, 8192, 4096)
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.4)
@@ -48,6 +48,7 @@ st.sidebar.markdown("""
             <li><strong>英雄搭配推荐：</strong>根据玩家的喜好和游戏风格，结合版本强势英雄，为玩家推荐适合的英雄搭配，做你的私有金牌BP教练。</li>
             <li><strong>游戏数据分析：</strong>利用大数据分析和机器学习技术，为玩家提供游戏数据分析服务，帮助玩家了解自己的游戏表现，找出不足之处，提高游戏水平。</li>
             <li><strong>游戏物品推荐：</strong>根据玩家的游戏进度和英雄特点，为玩家推荐合适的游戏铭文，游戏装备，提高游戏胜率。</li>
+            <li><strong>英雄故事创作：</strong>爬取王者荣耀官网英雄背景故事，根据你的故事想法进行修改和创新。</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -97,6 +98,14 @@ def render_chat_history():
 def display_hero_info():
     selected_hero = st.selectbox("选择爬取文件", os.listdir('./database/heroinfo'))
     with open(f'./database/heroinfo/{selected_hero}', 'r', encoding='gbk') as file:
+        hero_info = file.read()
+    st.text_area("文件信息", hero_info, height=600)
+    st.write("——以上数据从最新官网爬取，与最新版本保持一致")
+
+# 英雄信息展示窗口
+def display_hero_story():
+    selected_hero = st.selectbox("选择爬取文件", os.listdir('./database/herostory'))
+    with open(f'./database/herostory/{selected_hero}', 'r', encoding='gbk') as file:
         hero_info = file.read()
     st.text_area("文件信息", hero_info, height=600)
     st.write("——以上数据从最新官网爬取，与最新版本保持一致")
@@ -184,44 +193,106 @@ def data_chat_page():
                 st.write(f"请求失败: {e}")
 
     with col2:
-        st.subheader("crawl 信息处理")
-        
-        # 重新爬取数据按钮
-        if st.button("重新爬取数据"):
-            # 调用爬取数据的函数或API
-            st.write("数据爬取中...")
+        st.subheader("crawl 信息处理窗口")
+        # 嵌入英雄信息按钮逻辑
+        if st.button("重新嵌入英雄信息"):
+            embed_url = "http://localhost:8000/embeddatainfo"
             try:
-                # 假设有一个爬取数据的API
-                response = requests.get("http://localhost:8000/crawl")
+                response = requests.post(embed_url)
                 if response.status_code == 200:
-                    st.success("数据爬取成功！")
+                    st.success("英雄信息嵌入成功！")
                 else:
-                    st.error("数据爬取失败！")
+                    st.error("英雄信息嵌入失败！")
             except Exception as e:
-                st.error(f"爬取数据失败: {e}")
-        
-        # 将数据灌入 embedding 模型按钮
-        if st.button("重构向量数据库"):
-            # 调用灌入数据的函数或API
-            st.write("数据灌入中...")
+                st.write(f"请求失败: {e}")
+
+        # 爬取英雄信息按钮逻辑
+        if st.button("重新爬取英雄信息"):
+            crawl_url = "http://localhost:8000/crawlheroinfo"
             try:
-                # 假设有一个灌入数据的API
-                response = requests.post("http://localhost:8000/embed")
+                response = requests.get(crawl_url)
                 if response.status_code == 200:
-                    st.success("数据灌入成功！")
+                    st.success("英雄信息爬取成功！")
                 else:
-                    st.error("数据灌入失败！")
+                    st.error("英雄信息爬取失败！")
             except Exception as e:
-                st.error(f"灌入数据失败：{e}")
+                st.write(f"请求失败: {e}")
         
-        # 显示当前数据量
+        # 显示英雄信息
         display_hero_info()
 
+def story_creation_page():
+    # 屏幕布局
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.subheader("故事创作")
+
+        # 故事创作输入框
+        story_prompt = st.text_area("输入故事创作提示")
+        story_hero = st.text_input("输入英雄名称")
+
+        # 生成故事按钮
+        generate_story_button = st.button("生成故事")
+
+        # 处理生成故事按钮的点击事件
+        if generate_story_button:
+            # 调用 API 生成故事
+            story_api_url = "http://localhost:8000/story"
+            story_payload = {
+                "hero": story_hero,
+                "story_idea": story_prompt,
+            }
+
+            try:
+                response = requests.post(story_api_url, json=story_payload)
+                response_data = response.json()
+                story_results = response_data.get("results", [])
+                generated_story = "\n\n".join(story_results)
+                st.session_state.chat_history.append(f"用户：{story_prompt}\n")
+                st.session_state.chat_history.append(f"模型：{generated_story}\n")
+
+                # 显示生成的故事
+                st.text_area("生成的故事", value=generated_story, height=700)
+            except Exception as e:
+                st.write(f"请求失败: {e}")
+
+    with col2:
+        st.subheader("crawl 信息处理窗口")
+        # 嵌入故事数据按钮逻辑
+        if st.button("重新嵌入故事数据"):
+            embed_story_url = "http://localhost:8000/embeddatastory"
+            try:
+                response = requests.post(embed_story_url)
+                if response.status_code == 200:
+                    st.success("故事数据嵌入成功！")
+                else:
+                    st.error("故事数据嵌入失败！")
+            except Exception as e:
+                st.write(f"请求失败: {e}")
+
+        # 爬取故事数据按钮逻辑
+        if st.button("重新爬取故事数据"):
+            crawl_story_url = "http://localhost:8000/crawlherostory"
+            try:
+                response = requests.get(crawl_story_url)
+                if response.status_code == 200:
+                    st.success("故事数据爬取成功！")
+                else:
+                    st.error("故事数据爬取失败！")
+            except Exception as e:
+                st.write(f"请求失败: {e}")
+
+        # 显示英雄故事
+        display_hero_story()
+
+                
 # 根据选择的模式调用不同的函数
 if mode == "LLM 对话":
     llm_chat_page()
-else:
+elif mode == "知识库问答":
     data_chat_page()
+else:
+    story_creation_page()
 
 # 自定义样式
 st.markdown("""

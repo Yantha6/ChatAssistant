@@ -1,3 +1,8 @@
+"""
+This file is used to define the chat prompt template for the langchain model.
+not used in the current version of the code.
+"""
+
 from langchain_openai import ChatOpenAI
 import sys
 import os
@@ -53,11 +58,11 @@ def get_message(context,query):
     """
     return message
 
-llm = ChatOpenAI(model_name="gpt-4",
-                 max_tokens= 1000,
-                 temperature=0.7)
-message = chatprompt.format(query="你是谁")
-print(message)
-response = llm.invoke(message)
-print(response)
-print(response.content)
+# llm = ChatOpenAI(model_name="gpt-4",
+#                  max_tokens= 1000,
+#                  temperature=0.7)
+# message = chatprompt.format(query="你是谁")
+# print(message)
+# response = llm.invoke(message)
+# print(response)
+# print(response.content)

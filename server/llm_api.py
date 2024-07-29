@@ -13,6 +13,7 @@ from configs import *
 from database import *
 from server.prompt_api import *
 from server.embedding_api import *
+from server.storyflow import *
 
 # 初始化 FastAPI 应用
 app = FastAPI()
@@ -56,6 +57,13 @@ class SearchRequest(BaseModel):
 
 class SearchResponse(BaseModel):
     results: list
+
+class StoryRequest(BaseModel):
+    hero: str
+    story_idea: str
+
+class StoryResponse(BaseModel):
+    results: str
 
 @app.post("/generate", response_model=QueryResponse)
 async def generate_text(query: QueryRequest):
@@ -123,7 +131,7 @@ async def openai_generate_text(query: QueryRequest):
 async def create_chat_completion(request: ChatCompletionRequest):
     if request.model == "ChatGLM3":
         try:
-            search_results = search_texts(request.prompt)
+            search_results = search_heroinfo(request.prompt)
             context = "\n".join(search_results)
             message = datachatprompt.format(context=context, query=request.prompt)
             """
@@ -159,7 +167,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         
     elif request.model == "OpenAI":
         try:
-            search_results = search_texts(request.prompt)
+            search_results = search_heroinfo(request.prompt)
             context = "\n".join(search_results)
             message = datachatprompt.format(context=context, query=request.prompt)
             openai = ChatOpenAI(temperature=request.temperature,
@@ -173,8 +181,17 @@ async def create_chat_completion(request: ChatCompletionRequest):
     else:
         raise HTTPException(status_code=400, detail="Unsupported model")
 
-@app.get("/crawl")
-async def crawl_data():
+@app.post("/story", response_model=StoryResponse)
+async def story_Creation(query: StoryRequest):
+    try:
+        hero_story = search_stories(query.hero)
+        result = run_storyflow(hero_story, query.story_idea)
+        return StoryResponse(result=result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/crawlheroinfo")
+async def crawl_data_info():
     try:
         result = perform_data_crawl()
         if result:
@@ -184,18 +201,45 @@ async def crawl_data():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/embed", response_model=dict)
-async def embed_data():
+@app.get("/crawlherostory")
+async def crawl_data_story():
     try:
-        build_index()
+        result = perform_story_crawl()
+        if result:
+            return {"status": "success", "message": "数据爬取成功！"}
+        else:
+            raise HTTPException(status_code=500, detail="数据爬取失败！")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/embeddatainfo", response_model=dict)
+async def embed_data_info():
+    try:
+        build_index(HEROINFO_PATH, HEROINFO_INDEX_PATH, HEROINFO_TEXTS_PATH)
         return {"status": "success", "message": "数据嵌入成功！"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/search", response_model=SearchResponse)
-async def search_data(query: SearchRequest):
+@app.post("/embeddatastory", response_model=dict)
+async def embed_data_story():
     try:
-        results = search_texts(query.query, query.top_k)
+        build_index(HEROSTORY_PATH, HEROSTORY_INDEX_PATH, HEROSTORY_TEXTS_PATH)
+        return {"status": "success", "message": "数据嵌入成功！"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/searchheroinfo", response_model=SearchResponse)
+async def search_data_info(query: SearchRequest):
+    try:
+        results = search_heroinfo(query.query, query.top_k)
+        return SearchResponse(results=results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/searchdatastory", response_model=SearchResponse)
+async def search_data_story(query: SearchRequest):
+    try:
+        results = search_stories(query.query, query.top_k)
         return SearchResponse(results=results)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

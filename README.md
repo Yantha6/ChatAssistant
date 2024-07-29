@@ -1,7 +1,7 @@
 # ChatAssistant
 
 <div style="text-align: center;">
-  <img src="utils/ChatAssistant.png" alt="ChatAssistant" width="400"/>
+  <img src="utils/ChatAssistant.png" alt="ChatAssistant" width="100"/>
 </div>
 ChatAssistant是一套在线爬取网络数据来训练LLM模型，并部署到网页进行交互的RAG流程
 
@@ -13,6 +13,7 @@ ChatAssistant是一套在线爬取网络数据来训练LLM模型，并部署到�
 * 🚀 **支持多轮对话**：支持对话历史，可以与玩家进行多轮交流，提供更加个性化的对话服务。
 * 📦 **前后端开发**：前端基于Streamlit，后端基于Fastapi，支持API接口访问。
 * 📈 **实时数据源**：数据源基于BeautifulSoup从官网实时爬取，只需更换爬虫部分，即可进行私有垂直领域部署。
+* 🌟 **工作流**：支持LangGraph实现工作流，完成英雄的背景故事创作和续写。
 
 ## 项目简介
 当前爬虫脚本基于王者荣耀官网获取最新版本的英雄、装备、技能等信息，功能如下：
@@ -20,6 +21,7 @@ ChatAssistant是一套在线爬取网络数据来训练LLM模型，并部署到�
 * **英雄搭配推荐**：根据玩家的喜好和游戏风格，结合版本强势英雄，为玩家推荐适合的英雄搭配，做你的私有金牌BP教练。
 * **游戏数据分析**：利用大数据分析和机器学习技术，为玩家提供游戏数据分析服务，帮助玩家了解自己的游戏表现，找出不足之处，提高游戏水平。
 * **游戏物品推荐**：根据玩家的游戏进度和英雄特点，为玩家推荐合适的游戏铭文、游戏装备，提高游戏胜率。
+* **英雄故事创作**：爬取王者荣耀官网英雄背景故事，根据你的故事想法进行故事修改和故事创新。
 
 # 快速开始
 1. 默认已经安装python,pytorch以及pip工具，建议使用Anaconda进行版本管理
@@ -50,6 +52,11 @@ python start.py
 
 对话页面：
 ![image](utils/chat.png)
+
+故事创作工作流：
+<div style="text-align: center;">
+  <img src="utils/storyflow.png" width="300"/>
+</div>
 
 # 联系我
 Author: Tianhan Yang  
